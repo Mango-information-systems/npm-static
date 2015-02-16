@@ -64,7 +64,7 @@ gulp.task('images', function() {
 gulp.task('pages', function() {
 	var mdFilter = gulpFilter('*.md')
 	
-	return gulp.src(paths.src + 'pages/*')
+	return gulp.src(paths.src + 'pages/**/*.*')
 	  .pipe(frontMatter({
 		property: 'data',
 		remove: true
@@ -78,7 +78,9 @@ gulp.task('pages', function() {
 	  .pipe(mdFilter)
 	  .pipe(marked())
 	  .pipe(mdFilter.restore())
-	  .pipe(gulp.dest(paths.dest + 'pages'))
+	  .pipe(gulp.dest(function(file) {
+		  return paths.dest + (file.data.lang || 'en')
+	  }))
 	  .pipe(livereload(connect))
 })
 
