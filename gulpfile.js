@@ -21,10 +21,18 @@ var packageJSON  = require('./package')
 	, jshintConfig = packageJSON.jshintConfig
 
 var paths = {
-		src:  'src/'
-		, layout: 'layouts/'
-		, dest: 'dest/'
-	}
+	src:  'src/'
+	, layout: 'layouts/'
+	, dest: 'dest/'
+}
+
+// validate scripts
+gulp.task('lint', function() {
+	return gulp.src(paths.src + 'js/*.js')
+	  .pipe(jshint(jshintConfig))
+	  .pipe(jshint.reporter(stylish))
+	  .pipe(jshint.reporter('fail'))
+})
 
 // concatenate JS Files
 gulp.task('scripts', function() {
@@ -35,13 +43,7 @@ gulp.task('scripts', function() {
 		.pipe(gulp.dest(paths.dest + 'js'))
 })
 
-gulp.task('lint', function() {
-	return gulp.src(paths.src + 'js/*.js')
-	  .pipe(jshint(jshintConfig))
-	  .pipe(jshint.reporter(stylish))
-	  .pipe(jshint.reporter('fail'))
-})
-
+// compile sass
 gulp.task('sass', function() {
 	return sass(paths.src + 'scss/', {style: 'compressed'}) 
 	.on('error', function (err) {
@@ -56,6 +58,8 @@ gulp.task('scss-lint', function() {
 	  .pipe(scsslint())
 	  .pipe(scsslint.failReporter())
 })
+
+gulp.task('assets', ['lint', 'scripts', 'scss-lint', 'sass', 'images'])
 
 gulp.task('images', function() {
 	return gulp.src(paths.src + 'img/**/*')
@@ -75,7 +79,7 @@ gulp.task('pages', function() {
 	pages.pipe(gulpIgnore.include(function(file) { return Object.keys(file.data).length === 0 }))
 	  .pipe(debug({title: 'Invalid page: missing front matter'}))
 	  
-	return pages.pipe(gulpIgnore.include(function(file) { return Object.keys(file.data).length === 0 }))
+	return pages.pipe(gulpIgnore.include(function(file) { return Object.keys(file.data).length !== 0 }))
 	  .pipe(applyTemplate({
 		engine: 'ejs'
 		, template: function (context) {
@@ -103,4 +107,4 @@ gulp.task('watch', function() {
 })
 
 // Default Task
-gulp.task('default', ['lint', 'scripts', 'scss-lint', 'sass', 'images', 'pages'])
+gulp.task('default', ['assets', 'pages'])
