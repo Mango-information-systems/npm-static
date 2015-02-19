@@ -62,9 +62,9 @@ gulp.task('scss-lint', function() {
 gulp.task('assets', ['lint', 'scripts', 'scss-lint', 'sass', 'images'])
 
 gulp.task('images', function() {
-	return gulp.src(paths.src + 'img/**/*')
+	return gulp.src(paths.src + 'assets/img/**/*')
 	  .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
-	  .pipe(gulp.dest(paths.dest + 'img'))
+	  .pipe(gulp.dest(paths.dest + 'assets/img'))
 })
 
 gulp.task('pages', function() {
