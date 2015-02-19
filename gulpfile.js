@@ -14,6 +14,8 @@ var gulp = require('gulp')
 	, gulpFilter = require('gulp-filter')
 	, connect = require('gulp-connect')
 	, livereload = require('gulp-livereload')
+	, gulpIgnore = require('gulp-ignore')
+	, debug = require('gulp-debug')
 
 var packageJSON  = require('./package')
 	, jshintConfig = packageJSON.jshintConfig
@@ -64,11 +66,16 @@ gulp.task('images', function() {
 gulp.task('pages', function() {
 	var mdFilter = gulpFilter('*.md')
 	
-	return gulp.src(paths.src + 'pages/**/*.*')
+	var pages= gulp.src(paths.src + 'pages/**/*.*')
 	  .pipe(frontMatter({
 		property: 'data',
 		remove: true
 	  }))
+	  
+	pages.pipe(gulpIgnore.include(function(file) { return Object.keys(file.data).length === 0 }))
+	  .pipe(debug({title: 'Invalid page: missing front matter'}))
+	  
+	return pages.pipe(gulpIgnore.include(function(file) { return Object.keys(file.data).length === 0 }))
 	  .pipe(applyTemplate({
 		engine: 'ejs'
 		, template: function (context) {
@@ -81,7 +88,6 @@ gulp.task('pages', function() {
 	  .pipe(gulp.dest(function(file) {
 		  return paths.dest + (file.data.lang || 'en')
 	  }))
-	  .pipe(livereload(connect))
 })
 
 gulp.task('index', function() {
