@@ -26,21 +26,35 @@ var paths = {
 	, dest: 'dest/'
 }
 
-// validate scripts
-gulp.task('lint', function() {
-	return gulp.src(paths.src + 'js/*.js')
-	  .pipe(jshint(jshintConfig))
+gulp.task('common-scripts', function() {
+	
+	var scripts = gulp.src(paths.src + 'assets/js/*.js')
+	
+	// validate scripts (lint)
+	scripts.pipe(jshint(jshintConfig))
 	  .pipe(jshint.reporter(stylish))
 	  .pipe(jshint.reporter('fail'))
-})
-
-// concatenate JS Files
-gulp.task('scripts', function() {
-	return gulp.src(paths.src + 'js/*.js')
-	  .pipe(concat('main.js'))
+	
+	// combine and minify scripts
+	return scripts.pipe(concat('main.js'))
 		.pipe(rename({suffix: '.min'}))
 		.pipe(uglify())
-		.pipe(gulp.dest(paths.dest + 'js'))
+		.pipe(gulp.dest(paths.dest + 'assets/js'))
+})
+
+gulp.task('specific-scripts', function() {
+	
+	var scripts = gulp.src(paths.src + 'assets/js/specific/*.js')
+	
+	// validate scripts (lint)
+	scripts.pipe(jshint(jshintConfig))
+	  .pipe(jshint.reporter(stylish))
+	  .pipe(jshint.reporter('fail'))
+	
+	// combine and minify scripts
+	return scripts.pipe(rename({suffix: '.min'}))
+		.pipe(uglify())
+		.pipe(gulp.dest(paths.dest + 'assets/js'))
 })
 
 // compile sass
@@ -59,13 +73,13 @@ gulp.task('scss-lint', function() {
 	  .pipe(scsslint.failReporter())
 })
 
-gulp.task('assets', ['lint', 'scripts', 'scss-lint', 'sass', 'images'])
-
 gulp.task('images', function() {
 	return gulp.src(paths.src + 'assets/img/**/*')
 	  .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
 	  .pipe(gulp.dest(paths.dest + 'assets/img'))
 })
+
+gulp.task('assets', ['common-scripts', 'specific-scripts', 'scss-lint', 'sass', 'images'])
 
 gulp.task('pages', function() {
 	var mdFilter = gulpFilter('*.md')
@@ -99,9 +113,9 @@ gulp.task('index', function() {
 
 gulp.task('watch', function() {
 
-  gulp.watch(paths.src + 'js/*.js', ['lint', 'scripts'])
-  gulp.watch(paths.src + 'scss/*.scss', ['sass'])
-  gulp.watch(paths.src + 'img/*', ['images'])
+  gulp.watch(paths.src + 'assets/js/*.js', ['scripts'])
+  gulp.watch(paths.src + 'assets/scss/*.scss', ['sass'])
+  gulp.watch(paths.src + 'assets/img/*', ['images'])
   gulp.watch(paths.src + 'pages/*', ['pages'])
 
 })
